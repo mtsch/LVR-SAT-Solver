@@ -7,6 +7,7 @@ module Types ( Literal (..)
              , SATResult (..)
              , getVariable
              , getValue
+             , getLitValue
              , isUnassigned
              , setValue
              , initValuation
@@ -23,6 +24,12 @@ data Literal = Lit Int
 instance Show Literal where
     show (Lit l) = "+" ++ show l
     show (Not l) = "-" ++ show l
+
+instance Read Literal where
+    readsPrec _ (c:cs) = if c == '-'
+                         then [(Not $ read cs, "")]
+                         else [(Lit $ read (c:cs), "")]
+    readsPrec _ _ = undefined
 
 type Clause = [Literal]
 
@@ -42,13 +49,15 @@ data SATResult = Unsatisfiable
 
 -- Get the variable name from literal
 getVariable :: Literal -> Int
-getVariable lit = case lit of
-                  Lit i -> i
-                  Not i -> i
+getVariable (Lit i) = i
+getVariable (Not i) = i
 
 -- Get value of variable from valuation.
 getValue :: Valuation -> Int -> Value
 getValue = (IntMap.!)
+
+getLitValue :: Valuation -> Literal -> Value
+getLitValue val = getValue val . getVariable
 
 -- Check if variable is unassigned.
 isUnassigned :: Valuation -> Int -> Bool

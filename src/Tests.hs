@@ -62,8 +62,9 @@ testSatisfiable = test [ "empty" ~: "empty formula 1" ~:
                          Satisfied [(10, FALSE)] ~=? satisfy 10 [[Not 10]]
                        , "simple" ~: "satisfiable 1" ~:
                          True ~=? (isSatisfied $ satisfy 10 [[Not 1, Lit 1]])
-                       , "simple" ~: "satisfiable 1" ~:
+                       , "simple" ~: "satisfiable 2" ~:
                          False ~=? (isSatisfied $ satisfy 10 [[Not 1], [Lit 1]])
-                       , "simple" ~: "satisfiable 1" ~:
-                         True ~=? (isSatisfied $ satisfy 10 [[Not 1], [Lit 2]])
+                       , "simple" ~: "simple formula 3" ~:
+                         Satisfied [(1, FALSE), (2, TRUE)] ~=?
+                                   satisfy 10 [[Not 1], [Lit 2]]
                        ]
