@@ -4,6 +4,7 @@ module Types ( Literal (..)
              , Formula
              , Value (..)
              , Valuation
+             , isNegated
              , getVariable
              , getValue
              , getLitValue
@@ -33,6 +34,10 @@ data Value = TRUE | FALSE | NA
 
 -- Collection of variables and their values.
 type Valuation = IntMap Value
+
+isNegated :: Literal -> Bool
+isNegated (Lit _) = False
+isNegated (Not _) = True
 
 -- Get the variable name from literal
 getVariable :: Literal -> Int
