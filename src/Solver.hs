@@ -1,4 +1,5 @@
-module Evaluate (evalLit, clauseSatisfied, formulaSatisfied, satisfy) where
+{-# OPTIONS_GHC -Wall #-}
+module Solver (evalLit, clauseSatisfied, formulaSatisfied, solve) where
 
 import Types
 
@@ -34,21 +35,22 @@ getFirstNA val formula =
           where
             f = (map . map) getVariable $ formula
 
-
+-- Remvoe satisfied clauses from formula.
 removeSatisfied :: Valuation -> Formula -> Formula
 removeSatisfied val = filter (not . clauseSatisfied val)
 
-satisfy :: Int -> Formula -> SATResult
-satisfy nvars formula = sat (initValuation nvars) formula
+-- Attempt to find a satisfying valuation.
+solve :: Formula -> Maybe [(Int, Value)]
+solve formula = sat initValuation formula
     where
       sat val formula =
           if formulaSatisfied val fml
-          then Satisfied $ getValuation val
+          then Just $ getValuation val
           else case getFirstNA val fml of
-                 Nothing -> Unsatisfiable
+                 Nothing -> Nothing
                  Just i ->
                      case sat (setValue i TRUE val) fml of
-                       Satisfied v   -> Satisfied v
-                       Unsatisfiable -> sat (setValue i FALSE val) fml
+                       Just v  -> Just v
+                       Nothing -> sat (setValue i FALSE val) fml
               where
                 fml = removeSatisfied val formula

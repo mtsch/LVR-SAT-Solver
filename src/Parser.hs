@@ -7,7 +7,7 @@ import Types
 
 -- Filter out lines starting with 'c' or empty lines.
 removeCommentsOrEmpty :: [String] -> [String]
-removeCommentsOrEmpty = filter (\l -> (not . null) l || head l /= 'c')
+removeCommentsOrEmpty = filter (\l -> (not . null) l && head l /= 'c')
 
 -- Read a single literal.
 readLiteral :: String -> Maybe Literal
@@ -40,12 +40,12 @@ readNVars str =
       _ -> Nothing
 
 -- Read a string in DIMACS format.
-readDIMACS :: String -> Maybe (Int, Formula)
+readDIMACS :: String -> Maybe Formula
 readDIMACS text =
     case removeCommentsOrEmpty $ lines text of
       l:ls -> let n   = readNVars l
                   cls = map readClause ls
               in if isJust n && all isJust cls
-                 then Just (fromJust n, map fromJust cls)
+                 then Just $ map fromJust cls
                  else Nothing
       _ -> Nothing

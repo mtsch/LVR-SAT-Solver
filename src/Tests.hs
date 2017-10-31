@@ -47,24 +47,24 @@ testSatisfiedFormula = test [ "1" ~: "empty" ~:
     where sat = formulaSatisfied valuation
 
 testSatisfiable = test [ "empty" ~: "empty formula 1" ~:
-                         Satisfied [] ~=? satisfy 10 []
+                         Satisfied [] ~=? satisfy []
                        , "empty" ~: "empty formula 2" ~:
-                         Satisfied [] ~=? satisfy 10 [[]]
+                         Satisfied [] ~=? satisfy [[]]
                        , "empty" ~: "empty formula 3" ~:
-                         Satisfied [] ~=? satisfy 10 [[], [], [], []]
+                         Satisfied [] ~=? satisfy [[], [], [], []]
                        , "simple" ~: "simple formula 1" ~:
-                         Satisfied [(1, TRUE)] ~=? satisfy 10 [[Lit 1]]
+                         Satisfied [(1, TRUE)] ~=? satisfy [[Lit 1]]
                        , "simple" ~: "simple formula 2" ~:
-                         Satisfied [(1, FALSE)] ~=? satisfy 10 [[Not 1]]
+                         Satisfied [(1, FALSE)] ~=? satisfy [[Not 1]]
                        , "simple" ~: "simple formula 2" ~:
-                         Satisfied [(7, TRUE)] ~=? satisfy 10 [[Lit 7]]
+                         Satisfied [(7, TRUE)] ~=? satisfy [[Lit 7]]
                        , "simple" ~: "simple formula 2" ~:
-                         Satisfied [(10, FALSE)] ~=? satisfy 10 [[Not 10]]
+                         Satisfied [(10, FALSE)] ~=? satisfy [[Not 10]]
                        , "simple" ~: "satisfiable 1" ~:
-                         True ~=? (isSatisfied $ satisfy 10 [[Not 1, Lit 1]])
+                         True ~=? (isSatisfied $ satisfy [[Not 1, Lit 1]])
                        , "simple" ~: "satisfiable 2" ~:
-                         False ~=? (isSatisfied $ satisfy 10 [[Not 1], [Lit 1]])
+                         False ~=? (isSatisfied $ satisfy [[Not 1], [Lit 1]])
                        , "simple" ~: "simple formula 3" ~:
                          Satisfied [(1, FALSE), (2, TRUE)] ~=?
-                                   satisfy 10 [[Not 1], [Lit 2]]
+                                   satisfy [[Not 1], [Lit 2]]
                        ]
