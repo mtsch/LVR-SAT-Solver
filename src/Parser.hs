@@ -3,7 +3,7 @@ module Parser (readDIMACS) where
 import Data.Char
 import Data.Maybe
 
-import Types
+import Solver
 
 -- Filter out lines starting with 'c' or empty lines.
 removeCommentsOrEmpty :: [String] -> [String]

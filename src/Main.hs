@@ -6,15 +6,14 @@ import System.IO
 
 import Solver
 import Parser
-import Types
 
-resultToString :: [(Int, Value)] -> String
+resultToString :: [(Int, Bool)] -> String
 resultToString = concatMap showVar
     where
-      showVar (i, v) = case v of
-                         TRUE  -> show i ++ " "
-                         FALSE -> "-" ++ show i ++ " "
-                         NA    -> ""
+      showVar (i, v) =
+          if v
+          then show i ++ " "
+          else "-" ++ show i ++ " "
 
 -- Read file, solve the problem and write file.
 crunchFile :: String -> String -> IO ()

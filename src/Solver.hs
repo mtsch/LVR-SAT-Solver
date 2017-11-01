@@ -1,74 +1,68 @@
 {-# OPTIONS_GHC -Wall #-}
-module Solver (evalLit, clauseSatisfied, formulaSatisfied, solve) where
+module Solver (Literal (..), Clause, Formula, solve) where
 
-import Types
+import Data.List
 
--- Evaluate a literal.
-evalLit :: Valuation -> Literal -> Value
-evalLit val lit =
-    case lit of
-      Lit l -> getValue val l
-      Not l -> case getValue val l of
-                 TRUE  -> FALSE
-                 FALSE -> TRUE
-                 NA    -> NA
+data Literal = Lit Int
+             | Not Int
 
--- Check whether a clause evaluates to True.
-clauseSatisfied :: Valuation -> Clause -> Bool
-clauseSatisfied _ [] = False
-clauseSatisfied val cls = any (== TRUE) $ map (evalLit val) cls
+instance Show Literal where
+    show (Lit l) = "+" ++ show l
+    show (Not l) = "-" ++ show l
 
--- Check whether a formula is satisfied.
-formulaSatisfied :: Valuation -> Formula -> Bool
-formulaSatisfied _ [] = True
-formulaSatisfied val fml = all id $ map (clauseSatisfied val) fml
+type Clause = [Literal]
 
--- Simplify formula by:
--- + Removing variables that evaluate to FALSE.
--- + Removing clauses that are satisfied.
--- + Unit propagation.
-simplifyFormula :: Valuation -> Formula -> (Valuation, Formula)
-simplifyFormula valuation = foldr simplify (valuation, [])
+type Formula = [Clause]
+
+-- Get the label of variable.
+getLabel :: Literal -> Int
+getLabel (Lit i) = i
+getLabel (Not i) = i
+
+-- Convert the Literal to a (label, negated?) pair.
+toPair :: Literal -> (Int, Bool)
+toPair (Lit i) = (i, True)
+toPair (Not i) = (i, False)
+
+-- Set multiple variables in a formula.
+assign :: [(Int, Bool)] -> Formula -> Formula
+assign vals = foldr set []
     where
-      simplify cls (val, cs) =
-          case removeFalse val cls of
-            lit:[] ->
-                case evalLit val lit of
-                  TRUE  -> (val, cs)
-                  FALSE -> (val, []:cs) -- not reached
-                  NA    -> (unitprop lit val, cs)
-            c -> if clauseSatisfied val c
-                 then (val, cs)
-                 else (val, c:cs)
+      set c cs =
+          case intersect vals pairs of
+            (_:_) -> cs   -- remove on true assignments
+            [] -> (c':cs) -- filter out false assignments
           where
-            removeFalse v = filter (\l -> evalLit v l /= FALSE)
-            unitprop l =
-                setValue (getVariable l) (if isNegated l then FALSE else TRUE)
+            pairs = map toPair c
+            vars  = map fst vals
+            c'    = filter (\l -> not $ getLabel l `elem` vars) c
 
--- Find the first unassigned variable in formula.
-getFirstNA :: Valuation -> Formula -> Maybe Int
-getFirstNA val formula =
-    case formula of
-      []   -> Nothing
-      [[]] -> Nothing
-      _    -> case (concatMap . filter) (isUnassigned val) $ f of
-                []    -> Nothing
-                (l:_) -> Just l
-          where
-            f = (map . map) getVariable $ formula
-
--- Attempt to find a satisfying valuation.
-solve :: Formula -> Maybe [(Int, Value)]
-solve formula = sat initValuation formula
+-- Unit propagation - handle all unit clauses at once.
+unitPropagate :: [(Int, Bool)] -> Formula -> ([(Int, Bool)], Formula)
+unitPropagate val fml = (assignments ++ val, assign assignments fml)
     where
-      sat v f =
-          if formulaSatisfied val fml
-          then Just $ getValuation val
-          else case getFirstNA val fml of
-                 Nothing -> Nothing
-                 Just i ->
-                     case sat (setValue i TRUE val) fml of
-                       Just r  -> Just r
-                       Nothing -> sat (setValue i FALSE val) fml
-              where
-                (val, fml) = simplifyFormula v f
+      units = map head $ filter (null . tail) fml
+      assignments = map toPair units
+
+-- Solve the SAT problem.
+solve :: Formula -> Maybe [(Int, Bool)]
+solve formula = sat [] formula
+    where
+      sat val [] = Just val
+      sat val fml =
+          if any null fml
+          then Nothing
+          else case fml' of
+                 [] -> Just val
+                 _  -> if any null fml'
+                       then Nothing
+                       else case sat valT fmlT of
+                              Just r  -> Just r
+                              Nothing -> sat valF fmlF
+          where
+            (val', fml') = unitPropagate val fml
+            i = getLabel . head . head $ fml'
+            fmlT = assign [(i, True)] fml'
+            valT = (i, True):val'
+            fmlF = assign [(i, False)] fml'
+            valF = (i, False):val'
