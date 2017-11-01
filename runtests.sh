@@ -5,7 +5,7 @@ cabal build
 pushd src
 
 PROGRAM="../dist/build/LVR-SAT-solver/LVR-SAT-solver"
-CHECK="runhaskell Testvaluation.hs"
+CHECK="runhaskell TestValuation.hs"
 DIR="../benchmark"
 
 for f in $(ls $DIR); do

@@ -2,7 +2,6 @@ module Parser (readDIMACS) where
 
 import Data.Char
 import Data.Maybe
-
 import qualified Data.Set as Set
 
 import Solver

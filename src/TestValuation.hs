@@ -1,6 +1,6 @@
 {- This module is intended to be run with runhaskell and is used to test whether
  - a valuation satisfies a formula. -}
-module Testvaluation where
+module TestValuation where
 
 import Data.Char
 import Data.Maybe

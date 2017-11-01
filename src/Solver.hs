@@ -15,7 +15,7 @@ instance Show Literal where
 instance Ord Literal where
     compare (Lit i) (Not j) = if i == j then GT else compare i j
     compare (Not i) (Lit j) = if i == j then LT else compare i j
-    compare l1 l2 = compare (getLabel l1) (getLabel l2)
+    compare l1 l2           = compare (getLabel l1) (getLabel l2)
 
 type Clause = Set Literal
 

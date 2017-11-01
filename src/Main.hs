@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
 module Main (main) where
 
-import System.Environment
-import System.IO
-
 import Data.Set (Set)
 import qualified Data.Set as Set
+
+import System.Environment
+import System.IO
 
 import Solver
 import Parser
