@@ -11,9 +11,9 @@ import Solver
 import Parser
 
 resultToString :: Set (Int, Bool) -> String
-resultToString = concatMap showVar . Set.toList
+resultToString = concatMap showVal . Set.toList
     where
-      showVar (i, v) =
+      showVal (i, v) =
           if v
           then show i ++ " "
           else "-" ++ show i ++ " "

@@ -14,10 +14,10 @@ removeCommentsOrEmpty = filter (\l -> (not . null) l && head l /= 'c')
 -- Read a single literal.
 readLiteral :: String -> Maybe Literal
 readLiteral str
-    | null str = Nothing
+    | null str                   = Nothing
     | c == '-' && all isDigit cs = Just . Not $ read cs
-    | all isDigit str = Just . Lit $ read str
-    | otherwise = Nothing
+    | all isDigit str            = Just . Lit $ read str
+    | otherwise                  = Nothing
     where
       c  = head str
       cs = tail str
