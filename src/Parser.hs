@@ -3,6 +3,8 @@ module Parser (readDIMACS) where
 import Data.Char
 import Data.Maybe
 
+import qualified Data.Set as Set
+
 import Solver
 
 -- Filter out lines starting with 'c' or empty lines.
@@ -24,7 +26,7 @@ readLiteral str
 readClause :: String -> Maybe Clause
 readClause str =
     if all isJust lits
-    then Just . map fromJust $ reverse lits
+    then Just . Set.fromList $ map fromJust lits
     else Nothing
     where
       tkns = tail . reverse $ words str -- remove trailing 0

@@ -4,11 +4,14 @@ module Main (main) where
 import System.Environment
 import System.IO
 
+import Data.Set (Set)
+import qualified Data.Set as Set
+
 import Solver
 import Parser
 
-resultToString :: [(Int, Bool)] -> String
-resultToString = concatMap showVar
+resultToString :: Set (Int, Bool) -> String
+resultToString = concatMap showVar . Set.toList
     where
       showVar (i, v) =
           if v
