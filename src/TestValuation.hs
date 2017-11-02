@@ -37,7 +37,7 @@ readVar str
 -- Eval a formula.
 evalLit :: Valuation -> Literal -> Bool
 evalLit val (Lit l) = Set.member (l, True) val
-evalLit val (Not l) = Set.member (l, False) val
+evalLit val (Neg l) = Set.member (l, False) val
 
 evalClause :: Valuation -> Clause -> Bool
 evalClause val = Set.member True . Set.map (evalLit val)
@@ -62,4 +62,4 @@ main :: IO ()
 main = getArgs >>= \args ->
        case args of
          fml:val:_ -> checkValuation val fml
-         _ -> hPutStrLn stderr "Error: Not enough command line aruments!"
+         _ -> hPutStrLn stderr "Error: Neg enough command line aruments!"

@@ -4,15 +4,15 @@ cabal build
 
 pushd src
 
-PROGRAM="../dist/build/LVR-SAT-solver/LVR-SAT-solver"
+SOLVE="../dist/build/LVR-SAT-solver/LVR-SAT-solver"
 CHECK="runhaskell TestValuation.hs"
 DIR="../benchmark"
 
 for f in $(ls $DIR); do
     echo $f:
-    $PROGRAM $DIR/$f $DIR/out.tmp
-    echo -n "  "
+    time $SOLVE $DIR/$f $DIR/out.tmp
     $CHECK $DIR/$f $DIR/out.tmp
+    echo
 done
 
 rm $DIR/out.tmp

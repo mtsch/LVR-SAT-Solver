@@ -5,16 +5,16 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 data Literal = Lit Int
-             | Not Int
+             | Neg Int
                deriving (Eq)
 
 instance Show Literal where
     show (Lit l) = show l
-    show (Not l) = "-" ++ show l
+    show (Neg l) = "-" ++ show l
 
 instance Ord Literal where
-    compare (Lit i) (Not j) = if i == j then GT else compare i j
-    compare (Not i) (Lit j) = if i == j then LT else compare i j
+    compare (Lit i) (Neg j) = if i == j then GT else compare i j
+    compare (Neg i) (Lit j) = if i == j then LT else compare i j
     compare l1 l2           = compare (getLabel l1) (getLabel l2)
 
 type Clause = Set Literal
@@ -26,56 +26,61 @@ type Valuation = Set (Int, Bool)
 -- Get the label of variable.
 getLabel :: Literal -> Int
 getLabel (Lit i) = i
-getLabel (Not i) = i
+getLabel (Neg i) = i
 
 -- Convert the Literal to a (label, negated?) pair.
 toPair :: Literal -> (Int, Bool)
 toPair (Lit i) = (i, True)
-toPair (Not i) = (i, False)
+toPair (Neg i) = (i, False)
 
--- Set multiple variables in a formula.
-assign :: Valuation -> Formula -> Formula
-assign vals = foldr assign' []
+-- Set multiple variables in a formula by removing clauses and literals.
+assign :: Valuation -> Formula -> Maybe Formula
+assign vals = foldr assign' (Just [])
     where
-      assign' c cs =
+      assign' _ Nothing   = Nothing
+      assign' c (Just cs) =
           case Set.intersection vals pairs of
             int
-              | Set.null int -> (c':cs)
-              | otherwise    -> cs
+              | not $ Set.null int -> Just cs
+              | Set.null c'        -> Nothing
+              | otherwise          -> Just (c':cs)
           where
-            pairs = Set.map toPair c
-            vars  = Set.map fst vals
+            pairs = Set.mapMonotonic toPair c
+            vars  = Set.mapMonotonic fst vals
             c'    = Set.filter (\l -> Set.notMember (getLabel l) vars) c
 
 -- Unit propagation - handle all unit clauses at once.
-unitPropagate :: Valuation -> Formula -> (Valuation, Formula)
-unitPropagate val fml = (val', fml')
+unitPropagate :: Valuation -> Formula -> Maybe (Valuation, Formula)
+unitPropagate val fml =
+    case fml' of
+      Nothing -> Nothing
+      Just f  -> Just (val', f)
     where
-      units       = map (Set.elemAt 0) $ filter isUnit fml
-      assignments = Set.fromList $ map toPair units
+      units       = Set.fromList . map (Set.elemAt 0) . filter isUnit $ fml
+      assignments = Set.mapMonotonic toPair units
       isUnit c    = Set.size c == 1
       val'        = Set.union assignments val
       fml'        = assign assignments fml
 
 -- Solve the SAT problem.
 solve :: Formula -> Maybe Valuation
-solve formula = sat Set.empty formula
+solve formula = if any null formula
+                then Nothing
+                else sat Set.empty $ Just formula
     where
-      sat val [] = Just val
-      sat val fml =
-          if any null fml
-          then Nothing
-          else case fml' of
-                 [] -> Just val'
-                 _  -> if any null fml'
-                       then Nothing
-                       else case sat valT fmlT of
-                              Just r  -> Just r
-                              Nothing -> sat valF fmlF
-          where
-            (val', fml') = unitPropagate val fml
-            i            = getLabel . Set.elemAt 0 . head $ fml'
-            fmlT         = assign (Set.singleton (i, True)) fml'
-            valT         = Set.insert (i, True) val'
-            fmlF         = assign (Set.singleton (i, False)) fml'
-            valF         = Set.insert (i, False) val'
+      sat _ Nothing      = Nothing
+      sat val (Just [])  = Just val
+      sat val (Just fml) =
+          case unitPropagate val fml of
+            Nothing         -> Nothing
+            Just (val', []) -> Just val'
+            Just (val', fml') ->
+                case sat valT fmlT of
+                  Just r  -> Just r
+                  Nothing -> sat valF fmlF
+                where
+                  i     = getLabel . Set.elemAt 0 . head $ fml'
+                  fmlT  = assign (Set.singleton (i, True)) fml'
+                  valT  = Set.insert (i, True) val'
+                  fmlF  = assign (Set.singleton (i, False)) fml'
+                  valF  = Set.insert (i, False) val'

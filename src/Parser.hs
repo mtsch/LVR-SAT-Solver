@@ -14,7 +14,7 @@ removeCommentsOrEmpty = filter (\l -> (not . null) l && head l /= 'c')
 readLiteral :: String -> Maybe Literal
 readLiteral str
     | null str                   = Nothing
-    | c == '-' && all isDigit cs = Just . Not $ read cs
+    | c == '-' && all isDigit cs = Just . Neg $ read cs
     | all isDigit str            = Just . Lit $ read str
     | otherwise                  = Nothing
     where
