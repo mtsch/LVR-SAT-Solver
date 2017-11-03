@@ -14,7 +14,7 @@ import Parser
 import Solver
 
 -- Read a clause.
-readValuation :: String -> Maybe Valuation
+readValuation :: String -> Maybe (Set (Int, Bool))
 readValuation str =
     if all isJust lits
     then Just . Set.fromList $ map fromJust lits
@@ -35,14 +35,14 @@ readVar str
       cs = tail str
 
 -- Eval a formula.
-evalLit :: Valuation -> Literal -> Bool
+evalLit :: Set (Int, Bool) -> Literal -> Bool
 evalLit val (Lit l) = Set.member (l, True) val
 evalLit val (Neg l) = Set.member (l, False) val
 
-evalClause :: Valuation -> Clause -> Bool
+evalClause :: Set (Int, Bool) -> Clause -> Bool
 evalClause val = Set.member True . Set.map (evalLit val)
 
-evalFormula :: Valuation -> Formula -> Bool
+evalFormula :: Set (Int, Bool) -> Formula -> Bool
 evalFormula val = all (evalClause val)
 
 -- Check a valuation and print the result to stdout.
