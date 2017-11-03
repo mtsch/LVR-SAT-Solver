@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
-module Main (main) where
+module Main where
 
-import Data.Set (Set)
 import qualified Data.Set as Set
 
 import System.Environment
@@ -10,7 +9,7 @@ import System.IO
 import Solver
 import Parser
 
-resultToString :: Set (Int, Bool) -> String
+resultToString :: Valuation -> String
 resultToString = concatMap showVal . Set.toList
     where
       showVal (i, v) =
