@@ -31,21 +31,34 @@ toPair :: Literal -> (Int, Bool)
 toPair (Lit i) = (i, True)
 toPair (Neg i) = (i, False)
 
+-- Convert the Literal to a negated (label, negated?) pair.
+-- toNegPair :: Literal -> (Int, Bool)
+-- toNegPair (Lit i) = (i, False)
+-- toNegPair (Neg i) = (i, True)
+
+-- Convert pair to Literal.
+fromPair :: (Int, Bool) -> Literal
+fromPair (i, True)  = Lit i
+fromPair (i, False) = Neg i
+
+negateLit :: Literal -> Literal
+negateLit (Lit i) = (Neg i)
+negateLit (Neg i) = (Lit i)
+
 -- Set multiple variables in a formula by removing clauses and literals.
 assign :: Set (Int, Bool) -> Formula -> Maybe Formula
 assign vals = foldr assign' (Just [])
     where
+      vars = Set.mapMonotonic fromPair vals
       assign' _ Nothing   = Nothing
       assign' c (Just cs) =
-          case Set.intersection vals pairs of
+          case Set.intersection vars c of
             int
               | not $ Set.null int -> Just cs -- Clause contains the assignment.
               | Set.null c'        -> Nothing -- Unsatisfiable clause.
               | otherwise          -> Just (c':cs)
           where
-            pairs = Set.mapMonotonic toPair c
-            vars  = Set.mapMonotonic fst vals
-            c'    = Set.filter (\l -> Set.notMember (getLabel l) vars) c
+            c' = Set.filter (\l -> Set.notMember (negateLit l) vars) c
 
 -- Unit propagation - handle all unit clauses at once.
 unitPropagate :: Valuation -> Formula -> Maybe (Valuation, Formula)
