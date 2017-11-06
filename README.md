@@ -1,6 +1,6 @@
 # LVR SAT SOLVER
 
-Course project for FRI LVR 2017: a simple SAT solver implemented in Haskell.
+Course project for FMF LVR 2017: a simple SAT solver implemented in Haskell.
 
 ## Building and running
 
